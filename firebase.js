@@ -11,6 +11,7 @@ import { getDatabase } from 'firebase/database';
 const firebaseConfig = {
   apiKey: "AIzaSyCrx8WFpwA0_fNPRGcxONv7bHNrf843IPs",
   authDomain: "qrcode-me-b97d6.firebaseapp.com",
+  databaseURL: "https://qrcode-me-b97d6-default-rtdb.firebaseio.com",
   projectId: "qrcode-me-b97d6",
   storageBucket: "qrcode-me-b97d6.appspot.com",
   messagingSenderId: "848422536360",

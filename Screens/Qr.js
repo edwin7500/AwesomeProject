@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ImageBackground, View, TextInput, Button, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import QRCode from 'react-native-qrcode-svg';
-import { getDatabase, ref, push, set } from 'firebase/database';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import ViewShot from 'react-native-view-shot';
 import { storage } from '../firebase';
-import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
-
-console.log(storage);
 
 function QRScreen() {
   const navigation = useNavigation();
@@ -14,45 +12,29 @@ function QRScreen() {
   const [input2, setInput2] = useState('');
   const [input3, setInput3] = useState('');
   const [qrCodeData, setQRCodeData] = useState('');
-  const database = getDatabase();
+  const viewShotRef = useRef(null);
 
   const handleGenerate = async () => {
-    // Combine the three inputs into a single string
     const data = `${input1}-${input2}-${input3}`;
     setQRCodeData(data);
     navigation.navigate('SaveScreen', { qrCodeData: data });
-
-      // Generate the QR code SVG data
-  const svgCode = QRCode.generateSVG(data, {
-    backgroundColor: '#FFFFFF',
-    color: '#000000',
-    width: 200,
-    height: 200,
-  });
-
-    // Upload the QR code image to Firebase Storage
-    const qrCodeRef = storageRef(storage, 'qrcodes/' + data + '.svg');
-    const metaData = { contentType: 'image/svg+xml' };
-    await uploadBytes(qrCodeRef, svgCode, metaData);
-
-      
-  // const svgCodeBuffer = Buffer.from(svgCode.split(',')[1], 'base64');
-  // await uploadBytes(qrCodeRef, svgCodeBuffer, metaData);
-
-    // Get the download URL of the uploaded image
-    const downloadURL = await getDownloadURL(qrCodeRef);
-
-      // Save the QR code data and download URL to the database
-  const newQRCodeRef = push(ref(database, 'qrcodes'));
-  const qrCodeEntry = {
-    data: data,
-    downloadURL: downloadURL,
-  };
-  await set(newQRCodeRef, qrCodeEntry);
-
-
   };
 
+  const handleSaveImage = async () => {
+    if (viewShotRef.current) {
+      try {
+        const uri = await viewShotRef.current.capture();
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const imageRef = ref(storage, 'qrCodes/qrCodeImage.jpg');
+        await uploadBytes(imageRef, blob);
+        const downloadURL = await getDownloadURL(imageRef);
+        console.log('Image uploaded to Firebase Storage:', downloadURL);
+      } catch (error) {
+        console.error('Error uploading QR code image:', error);
+      }
+    }
+  };
 
   return (
     <ImageBackground
@@ -108,7 +90,13 @@ function QRScreen() {
 
         <Button title="Generate QR Code" onPress={handleGenerate} />
 
-        {qrCodeData ? <QRCode value={qrCodeData} size={200} /> : null}
+        {qrCodeData ? (
+          <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 1 }}>
+            <QRCode value={qrCodeData} size={200} />
+          </ViewShot>
+        ) : null}
+
+        <Button title="Save QR Code Image" onPress={handleSaveImage} />
       </View>
     </ImageBackground>
   );

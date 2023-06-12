@@ -22,7 +22,7 @@ export default function Home({navigation}) {
             >QR Generator</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity  onPress={() => {navigation.navigate("SavedQR")}}
+        <TouchableOpacity  onPress={() => {navigation.navigate("SaveScreen")}}
         >
             <Text style={{backgroundColor: "#3EB489", 
                 padding: 10,

@@ -5,7 +5,7 @@ import { useRoute } from '@react-navigation/native';
 
 function SaveScreen() {
   const route = useRoute();
-  const { qrCodeData } = route.params;
+  const qrCodeData = route.params?.qrCodeData;
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
